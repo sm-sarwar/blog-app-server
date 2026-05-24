@@ -53,7 +53,7 @@ const getPost = async ({
                     hasEvery: tags as string[]
                 }
             }
-        )
+        ) 
     }
 
     if (typeof isFeatured === "boolean") {
