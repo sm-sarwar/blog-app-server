@@ -52,7 +52,23 @@ const getPost = async (req: Request, res: Response) => {
     }
 }
 
+const getPostById = async (req: Request, res: Response) =>{
+    try {
+        const { postId } = req.params;
 
+        if(!postId) {
+            throw new Error("Post ID is required");
+        }
+        const result = await postService.getPostById(postId as string);
+        res.status(200).json(result);
+
+    }catch(error) {
+        res.status(500).json ({
+            message: "Error fetching post",
+            detail: error instanceof Error ? error.message : "Unknown error"
+        })
+    }
+}
 
 
 const createPost = async (req: Request, res: Response) => {
@@ -80,5 +96,6 @@ const createPost = async (req: Request, res: Response) => {
 
 export const postController = {
     createPost,
-    getPost
+    getPost,
+    getPostById
 }

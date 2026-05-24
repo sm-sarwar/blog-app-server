@@ -7,8 +7,12 @@ const router = express.Router();
 
 router.get("/",postController.getPost)
 
+
+
 router.post("/", 
     auth(UserRoles.USER,UserRoles.ADMIN), 
     postController.createPost);
+    
+router.get("/:postId", postController.getPostById);
 
 export const postRouter = router;
