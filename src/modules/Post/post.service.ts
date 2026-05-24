@@ -8,16 +8,26 @@ const getPost = async ({
     tags = [],
     isFeatured,
     status,
-    authorId
+    authorId,
+    page,
+    limit,
+    skip,
+    sortBy,
+    sortOrder
 }: {
     search?: string,
     tags?: string[],
-    isFeatured : boolean | undefined,
-    status : PostStatus | undefined,
-    authorId: string | undefined
+    isFeatured: boolean | undefined,
+    status: PostStatus | undefined,
+    authorId: string | undefined,
+    page: number,
+    limit: number,
+    skip: number,
+    sortBy: string
+    sortOrder: string
 }) => {
 
-    const searchCondition : PostWhereInput []= []
+    const searchCondition: PostWhereInput[] = []
 
     if (search) {
         searchCondition.push(
@@ -53,7 +63,7 @@ const getPost = async ({
                     hasEvery: tags as string[]
                 }
             }
-        ) 
+        )
     }
 
     if (typeof isFeatured === "boolean") {
@@ -62,24 +72,46 @@ const getPost = async ({
         })
     }
 
-    if(status) {
+    if (status) {
         searchCondition.push({
             status
         })
     }
 
-    if(authorId) {
+    if (authorId) {
         searchCondition.push({
             authorId
         })
     }
 
+
+
     const result = await prisma.post.findMany({
+        take: limit,
+        skip,
+        where: {
+            AND: searchCondition
+        },
+        orderBy: {
+            [sortBy]: sortOrder
+        }
+    });
+
+    const totalCount = await prisma.post.count({
         where: {
             AND: searchCondition
         }
-    });
-    return result;
+    })
+
+    return {
+        data: result, 
+        pagination :{
+            total: totalCount,
+            page,
+            limit,
+            totalPages: Math.ceil(totalCount / limit)
+        }
+    };
 }
 
 

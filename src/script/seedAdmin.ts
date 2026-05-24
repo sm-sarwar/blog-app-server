@@ -39,7 +39,7 @@ async function seedAdmin() {
             })
             console.log("*******Admin email verified successfully*********")
         }
-            console.log("**********ADMIN SEEDING COMPLETED**********")
+        console.log("**********ADMIN SEEDING COMPLETED**********")
 
     } catch (error) {
         console.error("Error seeding admin user:", error);
