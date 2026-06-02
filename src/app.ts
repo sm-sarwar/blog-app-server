@@ -3,6 +3,7 @@ import { postRouter } from "./modules/Post/post.routes";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import cors from "cors"
+import { commentRouter } from "./modules/Comments/comment.routes";
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use(express.json());
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/posts", postRouter)
+
+app.use("/comments", commentRouter)
 
 app.get ("/", (req, res)=>{
     res.send("Hello World Now I'm teaching Prisma!");
