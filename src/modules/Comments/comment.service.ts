@@ -1,3 +1,4 @@
+import { CommentStatus } from "../../../generated/prisma/enums"
 import { prisma } from "../../lib/prisma"
 
 const createComment = async (payload : {
@@ -24,6 +25,95 @@ const createComment = async (payload : {
     })
 }
 
+
+const getCommentsById = async (commentId: string)=>{
+    return await prisma.comment.findUnique({
+        where: {
+            id : commentId
+        },
+        include: {
+            post: {
+                select : {
+                    id : true,
+                    title : true,
+                    views : true
+                }
+            }
+        }
+
+    })
+}
+
+const getCommentsByAuthorId = async (id: string) =>{
+    return await prisma.comment.findMany({
+        where: {
+            authorId : id
+        },
+        orderBy : {
+            createdAt : "desc"
+        },
+        include : {
+            post : {
+                select : {
+                    id : true,
+                    title : true
+                }
+            }
+        }
+    })
+}
+
+const deleteComment = async (commentId: string, authorId: string) =>{
+     const commentData = await prisma.comment.findFirst({
+        where : {
+            id : commentId,
+            authorId : authorId
+        },
+        select : {
+            id : true
+        }
+     })
+     
+     if (!commentData) {
+        throw new Error("Comment not found or you don't have permission to delete this comment")
+     }
+
+     return await prisma.comment.delete({
+        where  : {
+            id : commentData.id
+        }
+     })
+
+}
+
+
+const updateComment = async (commentId : string, authorId : string, data : {content? : string, status?: CommentStatus}) =>{
+    const commentData = await prisma.comment.findFirst({
+        where : {
+            id : commentId,
+            authorId : authorId
+        },
+        select : {
+            id : true
+        }
+     })
+     
+     if (!commentData) {
+        throw new Error("Comment not found or you don't have permission to update this comment")
+     }
+
+     return await prisma.comment.update({
+        where : {
+            id : commentData.id
+        },
+        data : data
+     })
+}
+
 export const CommentService = {
-    createComment
+    createComment,
+    getCommentsById,
+    getCommentsByAuthorId,
+    deleteComment,
+    updateComment
 }

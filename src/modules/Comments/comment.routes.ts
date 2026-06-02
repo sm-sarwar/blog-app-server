@@ -10,6 +10,23 @@ router.post("/",
 )
 
 
+router.get("/:commentId",
+    auth(UserRoles.USER, UserRoles.ADMIN),
+    commentController.getCommentsById
+)
+
+router.get("/author/:authorId",
+    auth(UserRoles.USER, UserRoles.ADMIN),
+    commentController.getCommentsByAuthorId
+)
+router.delete("/:commentId",
+    auth(UserRoles.USER, UserRoles.ADMIN),
+    commentController.deleteComment
+)
+router.patch("/:commentId",
+    auth(UserRoles.USER, UserRoles.ADMIN),
+    commentController.updateComment
+)
 
 
 
