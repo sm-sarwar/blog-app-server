@@ -192,12 +192,12 @@ const getPostById = async (postId: string) => {
 
 const getMyPosts = async (authorId: string) => {
 
-  await prisma.user.findUniqueOrThrow({
-        where : {
-            id : authorId,
-            status : "ACTIVE"
+    await prisma.user.findUniqueOrThrow({
+        where: {
+            id: authorId,
+            status: "ACTIVE"
         },
-        select : {
+        select: {
             id: true
         }
     })
@@ -211,10 +211,10 @@ const getMyPosts = async (authorId: string) => {
         orderBy: {
             createdAt: "desc"
         },
-        include : {
-            _count : {
-                select : {
-                    comments : true
+        include: {
+            _count: {
+                select: {
+                    comments: true
                 }
             }
         }
@@ -230,14 +230,67 @@ const getMyPosts = async (authorId: string) => {
         }
     })
     return {
-        data : result,
-        total : totalCount
+        data: result,
+        total: totalCount
     };
+}
+
+const updateMyPost = async (authorId: string, postId: string, data: Partial<Post>, isAdmin: boolean) => {
+    const postData = await prisma.post.findFirst({
+        where: {
+            id: postId
+        }
+    })
+
+    if (!postData) {
+        throw new Error("Post not found");
+    }
+
+    if (!isAdmin && (postData.authorId !== authorId)) {
+        throw new Error("Unauthorized");
+
+    }
+
+    if (!isAdmin) {
+        delete data.isFeatured;
+    }
+
+    return await prisma.post.update({
+        where: {
+            id: postData.id
+        },
+        data
+    })
+}
+
+const deleteMyPost = async (authorId : string, postId : string, isAdmin: boolean) => {
+    const postData = await prisma.post.findFirstOrThrow({
+        where: {
+            id : postId
+        },
+        select: {
+            id: true,
+            authorId: true
+        }
+    })
+
+    if (!isAdmin && (postData.authorId !== authorId)) {
+        throw new Error("Unauthorized");
+    }
+
+    return await prisma.post.delete({
+        where: {
+            id: postData.id
+        }
+    })
+
 }
 
 export const postService = {
     createPost,
     getPost,
     getPostById,
-    getMyPosts
+    getMyPosts,
+    updateMyPost,
+    deleteMyPost
 }

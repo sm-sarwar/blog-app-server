@@ -17,4 +17,15 @@ router.post("/",
 
 router.get("/:postId", postController.getPostById);
 
+router.patch("/my-posts/:postId",
+    auth(UserRoles.USER, UserRoles.ADMIN),
+    postController.updateMyPosts
+    
+)
+
+router.delete("/my-posts/:postId",
+    auth(UserRoles.USER, UserRoles.ADMIN),
+    postController.deleteMyPost
+)
+
 export const postRouter = router;

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
+import { UserRoles } from "../../middlewares/auth";
 
 
 const getPost = async (req: Request, res: Response) => {
@@ -115,10 +116,66 @@ const getMyPosts = async (req: Request, res: Response) => {
     }
 }
 
+const updateMyPosts = async (req: Request, res: Response) => {
+    try {
+
+        const user = req.user;
+
+        const isAdmin = user?.role === "ADMIN"
+
+        const { postId } = req.params
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            })
+        }
+        const result = await postService.updateMyPost(user.id, postId as string, req.body, isAdmin);
+        res.status(200).json(result);
+
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Error updating my post",
+            detail: error instanceof Error ? error.message : "Unknown error"
+        })
+    }
+}
+
+const deleteMyPost = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+
+        const isAdmin = user?.role === UserRoles.ADMIN
+
+        if( !user) {
+            throw new Error("Unauthorized");
+        }
+
+        
+
+        const { postId } = req.params;
+
+        const result = await postService.deleteMyPost(user.id as string, postId as string, isAdmin)
+        res.status(200).json({
+            message: "Post deleted successfully",
+             data: result
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Error deleting my post",
+            detail: error instanceof Error ? error.message : "Unknown error"
+        })
+    }
+}
+
 
 export const postController = {
     createPost,
     getPost,
     getPostById,
-    getMyPosts
+    getMyPosts,
+    updateMyPosts,
+    deleteMyPost
 }
