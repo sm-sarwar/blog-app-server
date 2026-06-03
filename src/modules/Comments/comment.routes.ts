@@ -28,6 +28,11 @@ router.patch("/:commentId",
     commentController.updateComment
 )
 
+router.patch("/:commentId/moderate",
+    auth(UserRoles.ADMIN),
+    commentController.moderateComment
+)
+
 
 
 

@@ -95,8 +95,8 @@ const getPost = async ({
         orderBy: {
             [sortBy]: sortOrder
         },
-        include : {
-            _count : {
+        include: {
+            _count: {
                 select: {
                     comments: true
                 }
@@ -154,7 +154,7 @@ const getPostById = async (postId: string) => {
                         parentId: null,
                         status: CommentStatus.APPROVED
                     },
-                    orderBy : {
+                    orderBy: {
                         createdAt: "desc"
                     },
                     include: {
@@ -162,7 +162,7 @@ const getPostById = async (postId: string) => {
                             where: {
                                 status: CommentStatus.APPROVED
                             },
-                            orderBy :{
+                            orderBy: {
                                 createdAt: "asc"
                             },
                             include: {
@@ -170,7 +170,7 @@ const getPostById = async (postId: string) => {
                                     where: {
                                         status: CommentStatus.APPROVED
                                     },
-                                    orderBy : {
+                                    orderBy: {
                                         createdAt: "asc"
                                     }
                                 }
@@ -178,8 +178,8 @@ const getPostById = async (postId: string) => {
                         }
                     }
                 },
-                _count : {
-                    select : {
+                _count: {
+                    select: {
                         comments: true
                     }
                 }
@@ -190,8 +190,54 @@ const getPostById = async (postId: string) => {
 }
 
 
+const getMyPosts = async (authorId: string) => {
+
+  await prisma.user.findUniqueOrThrow({
+        where : {
+            id : authorId,
+            status : "ACTIVE"
+        },
+        select : {
+            id: true
+        }
+    })
+
+
+
+    const result = await prisma.post.findMany({
+        where: {
+            authorId
+        },
+        orderBy: {
+            createdAt: "desc"
+        },
+        include : {
+            _count : {
+                select : {
+                    comments : true
+                }
+            }
+        }
+    })
+
+    const totalCount = await prisma.post.aggregate({
+
+        where: {
+            authorId
+        },
+        _count: {
+            id: true
+        }
+    })
+    return {
+        data : result,
+        total : totalCount
+    };
+}
+
 export const postService = {
     createPost,
     getPost,
-    getPostById
+    getPostById,
+    getMyPosts
 }

@@ -52,18 +52,18 @@ const getPost = async (req: Request, res: Response) => {
     }
 }
 
-const getPostById = async (req: Request, res: Response) =>{
+const getPostById = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
 
-        if(!postId) {
+        if (!postId) {
             throw new Error("Post ID is required");
         }
         const result = await postService.getPostById(postId as string);
         res.status(200).json(result);
 
-    }catch(error) {
-        res.status(500).json ({
+    } catch (error) {
+        res.status(500).json({
             message: "Error fetching post",
             detail: error instanceof Error ? error.message : "Unknown error"
         })
@@ -94,8 +94,31 @@ const createPost = async (req: Request, res: Response) => {
 }
 
 
+const getMyPosts = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            })
+        }
+        const result = await postService.getMyPosts(user.id);
+        res.status(200).json(result);
+
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching my posts",
+            detail: error instanceof Error ? error.message : "Unknown error"
+        })
+    }
+}
+
+
 export const postController = {
     createPost,
     getPost,
-    getPostById
+    getPostById,
+    getMyPosts
 }
