@@ -4,6 +4,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import cors from "cors"
 import { commentRouter } from "./modules/Comments/comment.routes";
+import errorHandler from "./middlewares/globalErrorHandler";
+import { notFound } from "./middlewares/notFound";
 
 const app = express();
 
@@ -24,8 +26,13 @@ app.use("/posts", postRouter)
 
 app.use("/comments", commentRouter)
 
+
 app.get ("/", (req, res)=>{
     res.send("Hello World Now I'm teaching Prisma!");
 })
+
+
+app.use(notFound)
+app.use(errorHandler)
 
 export default app;

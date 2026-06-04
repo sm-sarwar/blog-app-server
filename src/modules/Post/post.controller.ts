@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
@@ -72,7 +72,7 @@ const getPostById = async (req: Request, res: Response) => {
 }
 
 
-const createPost = async (req: Request, res: Response) => {
+const createPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
         if (!req.user) {
@@ -87,10 +87,7 @@ const createPost = async (req: Request, res: Response) => {
         res.status(201).json(result);
 
     } catch (error) {
-        res.status(500).json({
-            message: "Error creating post",
-            detail: error instanceof Error ? error.message : "Unknown error"
-        })
+        next(error)
     }
 }
 
@@ -148,18 +145,18 @@ const deleteMyPost = async (req: Request, res: Response) => {
 
         const isAdmin = user?.role === UserRoles.ADMIN
 
-        if( !user) {
+        if (!user) {
             throw new Error("Unauthorized");
         }
 
-        
+
 
         const { postId } = req.params;
 
         const result = await postService.deleteMyPost(user.id as string, postId as string, isAdmin)
         res.status(200).json({
             message: "Post deleted successfully",
-             data: result
+            data: result
         })
 
     } catch (error) {
@@ -177,7 +174,7 @@ const getStats = async (req: Request, res: Response) => {
         const result = await postService.getStats()
         res.status(200).json({
             message: "Stats fetched successfully",
-             data: result
+            data: result
         })
 
     } catch (error) {
