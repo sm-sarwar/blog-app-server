@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get("/", postController.getPost)
 
+router.get ("/stats", auth(UserRoles.ADMIN), postController.getStats)
+
 router.get("/my-posts",
     auth(UserRoles.USER, UserRoles.ADMIN),
     postController.getMyPosts);
@@ -27,5 +29,6 @@ router.delete("/my-posts/:postId",
     auth(UserRoles.USER, UserRoles.ADMIN),
     postController.deleteMyPost
 )
+
 
 export const postRouter = router;

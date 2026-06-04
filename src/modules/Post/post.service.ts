@@ -1,6 +1,7 @@
 import { CommentStatus, Post, PostStatus } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
+import { UserRoles } from "../../middlewares/auth";
 
 
 const getPost = async ({
@@ -263,10 +264,10 @@ const updateMyPost = async (authorId: string, postId: string, data: Partial<Post
     })
 }
 
-const deleteMyPost = async (authorId : string, postId : string, isAdmin: boolean) => {
+const deleteMyPost = async (authorId: string, postId: string, isAdmin: boolean) => {
     const postData = await prisma.post.findFirstOrThrow({
         where: {
-            id : postId
+            id: postId
         },
         select: {
             id: true,
@@ -286,11 +287,45 @@ const deleteMyPost = async (authorId : string, postId : string, isAdmin: boolean
 
 }
 
+
+const getStats = async () => {
+    return await prisma.$transaction(async (tx) => {
+
+        const [totalPosts, totalPublishedPosts, totalDraftPosts, totalArchivedPosts, totalComments, approvedComments, rejectedComments, totalUser, totalAdminCount, totalUserCount, totalViews] = await Promise.all([
+            await tx.post.count(),
+            await tx.post.count({ where: { status: PostStatus.PUBLISHED } }),
+            await tx.post.count({ where: { status: PostStatus.DRAFT } }),
+            await tx.post.count({ where: { status: PostStatus.ARCHIVED } }),
+            await tx.comment.count(),
+            await tx.comment.count({ where: { status: CommentStatus.APPROVED } }),
+            await tx.comment.count({ where: { status: CommentStatus.REJECTED } }),
+            await tx.user.count(),
+            await tx.user.count({ where: { role: UserRoles.ADMIN } }),
+            await tx.user.count({ where: { role: UserRoles.USER } }),
+            await tx.post.aggregate({ _sum : { views: true}}).then(res => res._sum.views || 0)
+        ])
+        return {
+            totalPosts,
+            totalPublishedPosts,
+            totalDraftPosts,
+            totalArchivedPosts,
+            totalComments,
+            approvedComments,
+            rejectedComments,
+            totalUser,
+            totalAdminCount,
+            totalUserCount,
+            totalViews
+        }
+    })
+}
+
 export const postService = {
     createPost,
     getPost,
     getPostById,
     getMyPosts,
     updateMyPost,
-    deleteMyPost
+    deleteMyPost,
+    getStats
 }
